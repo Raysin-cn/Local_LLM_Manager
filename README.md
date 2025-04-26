@@ -27,6 +27,9 @@ cd <project-directory>
 
 2. 配置环境：
 ```bash
+# 安装相应的库(若存在已安装如下库的python，则可直接在.env中配置解释器路径)
+pip install vllm huggingface-hub
+
 # 复制示例配置文件
 cp .env.template .env
 
