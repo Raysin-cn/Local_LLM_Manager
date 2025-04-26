@@ -9,7 +9,7 @@ curl -X POST $API_URL \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $API_KEY" \
   -d '{
-    "model": "/home/models/Qwen/Qwen1.5-7B-Chat",
+    "model": "/home/models/Qwen1.5-7B-Chat",
     "messages": [
       {"role": "system", "content": "你是一个有用的AI助手。"},
       {"role": "user", "content": "你是什么大模型"}
