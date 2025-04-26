@@ -111,9 +111,11 @@ check_system_status() {
     if command -v nvidia-smi &> /dev/null; then
         gpu_info=$(nvidia-smi --query-gpu=name,memory.total,memory.free --format=csv,noheader,nounits 2>/dev/null)
         if [ $? -eq 0 ]; then
-            gpu_name=$(echo "$gpu_info" | awk -F',' '{print $1}')
-            gpu_total=$(echo "$gpu_info" | awk -F',' '{print $2}')
-            gpu_free=$(echo "$gpu_info" | awk -F',' '{print $3}')
+            # 只取第一行数据，避免多GPU时的重复显示
+            gpu_info=$(echo "$gpu_info" | head -n 1)
+            gpu_name=$(echo "$gpu_info" | awk -F',' '{print $1}' | xargs)
+            gpu_total=$(echo "$gpu_info" | awk -F',' '{print $2}' | xargs)
+            gpu_free=$(echo "$gpu_info" | awk -F',' '{print $3}' | xargs)
             echo "  ├─ 型号: $gpu_name"
             echo "  ├─ 总显存: $gpu_total MB"
             echo "  └─ 可用显存: $gpu_free MB"
