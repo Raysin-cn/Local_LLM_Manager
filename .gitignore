@@ -2,3 +2,4 @@ Qwen*/
 THUDM*/
 
 llm_server.log
+.env
