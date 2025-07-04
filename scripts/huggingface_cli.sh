@@ -31,11 +31,45 @@ fi
 HF_CLI_PATH="$(dirname "$PYTHON_PATH")/huggingface-cli"
 HF_ENDPOINT="${HF_ENDPOINT:-https://hf-mirror.com}"
 
+# 设置代理
+if [ -n "$HTTP_PROXY" ]; then
+    export http_proxy="$HTTP_PROXY"
+    export https_proxy="$HTTP_PROXY"
+    echo -e "${YELLOW}使用代理: $HTTP_PROXY${NC}"
+fi
+
+# 禁用SSL验证
+export CURL_CA_BUNDLE=""
+export REQUESTS_CA_BUNDLE=""
+
 # 颜色定义
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
+
+# 函数：检查网络连接
+check_network() {
+    echo -e "${YELLOW}正在检查网络连接...${NC}"
+    if [ -n "$HTTP_PROXY" ]; then
+        echo -e "${YELLOW}使用代理进行网络检查...${NC}"
+        if curl -x "$HTTP_PROXY" -s "$HF_ENDPOINT" > /dev/null; then
+            echo -e "${GREEN}网络连接正常${NC}"
+            return 0
+        else
+            echo -e "${RED}网络连接失败，请检查代理设置${NC}"
+            return 1
+        fi
+    else
+        if ping -c 1 $HF_ENDPOINT > /dev/null 2>&1; then
+            echo -e "${GREEN}网络连接正常${NC}"
+            return 0
+        else
+            echo -e "${RED}网络连接失败，请检查网络设置${NC}"
+            return 1
+        fi
+    fi
+}
 
 # 函数：检查环境
 check_env() {
@@ -52,8 +86,8 @@ check_env() {
     return 0
 }
 
-# 检查环境
-if ! check_env; then
+# 检查环境和网络
+if ! check_env || ! check_network; then
     exit 1
 fi
 
@@ -62,7 +96,7 @@ echo "============================================="
 echo "🤖 Hugging Face 模型下载工具"
 echo "============================================="
 echo "1. 下载 ChatGLM3-6B"
-echo "2. 下载 Qwen1.5-7B-Chat"
+echo "2. 下载 DeepSeek-V3-0324"
 echo "3. 下载 Qwen2.5-VL-7B-Instruct"
 echo "4. 自定义下载"
 echo "0. 返回上一级"
@@ -79,15 +113,15 @@ case $choice in
         model_name="chatglm3-6b"
         model_dir="$MODEL_ROOT/$model_name"
         mkdir -p "$model_dir"
-        "$HF_CLI_PATH" download "$model_id" --local-dir "$model_dir"
+        HF_ENDPOINT="$HF_ENDPOINT" "$HF_CLI_PATH" download "$model_id" --local-dir "$model_dir" --local-dir-use-symlinks False
         ;;
     2)
-        echo -e "${YELLOW}⏳ 正在下载 Qwen1.5-7B-Chat...${NC}"
-        model_id="Qwen/Qwen1.5-7B-Chat"
-        model_name="Qwen1.5-7B-Chat"
+        echo -e "${YELLOW}⏳ 正在下载 DeepSeek-V3-0324...${NC}"
+        model_id="deepseek-ai/DeepSeek-V3-0324"
+        model_name="DeepSeek-V3-0324"
         model_dir="$MODEL_ROOT/$model_name"
         mkdir -p "$model_dir"
-        "$HF_CLI_PATH" download "$model_id" --local-dir "$model_dir"
+        HF_ENDPOINT="$HF_ENDPOINT" "$HF_CLI_PATH" download "$model_id" --local-dir "$model_dir" --local-dir-use-symlinks False
         ;;
     3)
         echo -e "${YELLOW}⏳ 正在下载 Qwen2.5-VL-7B-Instruct...${NC}"
@@ -95,7 +129,7 @@ case $choice in
         model_name="Qwen2.5-VL-7B-Instruct"
         model_dir="$MODEL_ROOT/$model_name"
         mkdir -p "$model_dir"
-        "$HF_CLI_PATH" download "$model_id" --local-dir "$model_dir"
+        HF_ENDPOINT="$HF_ENDPOINT" "$HF_CLI_PATH" download "$model_id" --local-dir "$model_dir" --local-dir-use-symlinks False
         ;;
     4)
         echo "请输入模型ID（例如：THUDM/chatglm3-6b）："
@@ -110,11 +144,11 @@ case $choice in
         
         # 设置保存路径
         model_dir="$MODEL_ROOT/$model_name"
-        echo "模型将保存到: $model_dir"
+        echo -e "模型将保存到: $model_dir"
         
         echo -e "${YELLOW}⏳ 正在下载 $model_id...${NC}"
         mkdir -p "$model_dir"
-        "$HF_CLI_PATH" download "$model_id" --local-dir "$model_dir" --local-dir-use-symlinks False
+        HF_ENDPOINT="$HF_ENDPOINT" "$HF_CLI_PATH" download "$model_id" --local-dir "$model_dir" --local-dir-use-symlinks False
         ;;
     0)
         echo "👋 返回上一级"
@@ -126,6 +160,7 @@ case $choice in
         ;;
 esac
 
+# 检查下载结果
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}✅ 下载完成！${NC}"
     echo "模型已保存到: $model_dir"

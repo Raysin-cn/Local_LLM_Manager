@@ -17,16 +17,17 @@ SCRIPTS_DIR="$(dirname "$0")/scripts"  # 脚本目录
 MODEL_ROOT="${MODEL_ROOT:-$(pwd)}"     # 模型根目录
 
 # 设置Python解释器路径
-if [ -z "$PYTHON_PATH" ]; then
-    PYTHON_PATH=$(which python3)
-    if [ -z "$PYTHON_PATH" ]; then
-        PYTHON_PATH=$(which python)
-    fi
-    if [ -z "$PYTHON_PATH" ]; then
-        echo -e "\033[0;31m❌ 错误: 未找到Python解释器\033[0m"
-        exit 1
-    fi
-fi
+# if [ -z "$PYTHON_PATH" ]; then
+#     PYTHON_PATH=$(which python3)
+#     if [ -z "$PYTHON_PATH" ]; then
+#         PYTHON_PATH=$(which python)
+#     fi
+#     if [ -z "$PYTHON_PATH" ]; then
+#         echo -e "\033[0;31m❌ 错误: 未找到Python解释器\033[0m"
+#         exit 1
+#     fi
+# fi
+PYTHON_PATH="/home/models/venv/llm/bin/python"
 
 # 颜色定义
 RED='\033[0;31m'

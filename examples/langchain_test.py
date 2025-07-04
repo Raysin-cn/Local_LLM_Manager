@@ -3,8 +3,8 @@ from langchain.schema import HumanMessage, SystemMessage
 
 # 配置本地模型
 llm = ChatOpenAI(
-    model_name="/home/models/Qwen/Qwen1.5-7B-Chat",  # 模型路径
-    openai_api_base="http://localhost:12345/v1",     # 本地服务地址
+    model_name="/home/models/Qwen2.5-VL-7B-Instruct",  # 模型路径
+    openai_api_base="http://192.168.1.100:12345/v1",     # 本地服务地址
     openai_api_key="test-key",                       # 任意字符串
     temperature=0.7,                                 # 温度参数
     max_tokens=100                                   # 最大生成token数

@@ -20,16 +20,17 @@ LOG_FILE="${LOG_FILE:-$MODEL_ROOT/llm_server.log}" # 日志文件
 SELECTED_MODEL=""                      # 存储选择的模型路径
 
 # 设置Python解释器路径
-if [ -z "$PYTHON_PATH" ]; then
-    PYTHON_PATH=$(which python3)
-    if [ -z "$PYTHON_PATH" ]; then
-        PYTHON_PATH=$(which python)
-    fi
-    if [ -z "$PYTHON_PATH" ]; then
-        echo -e "\033[0;31m❌ 错误: 未找到Python解释器\033[0m"
-        exit 1
-    fi
-fi
+# if [ -z "$PYTHON_PATH" ]; then
+#     PYTHON_PATH=$(which python3)
+#     if [ -z "$PYTHON_PATH" ]; then
+#         PYTHON_PATH=$(which python)
+#     fi
+#     if [ -z "$PYTHON_PATH" ]; then
+#         echo -e "\033[0;31m❌ 错误: 未找到Python解释器\033[0m"
+#         exit 1
+#     fi
+# fi
+PYTHON_PATH="/home/models/venv/llm/bin/python"
 
 # 颜色定义
 RED='\033[0;31m'
@@ -106,6 +107,22 @@ check_python() {
     return 0
 }
 
+# 获取空闲显存最多的GPU索引
+get_best_cuda_idx() {
+    local best_idx=0
+    local max_free=0
+    local count=0
+    # 获取每张卡的空闲显存（单位MiB）
+    while read -r idx free; do
+        if [ "$free" -gt "$max_free" ]; then
+            max_free=$free
+            best_idx=$idx
+        fi
+        ((count++))
+    done < <(nvidia-smi --query-gpu=index,memory.free --format=csv,noheader,nounits)
+    echo $best_idx
+}
+
 # 函数：启动服务
 start_server() {
     if lsof -i :$PORT > /dev/null; then
@@ -127,24 +144,37 @@ start_server() {
         return 1
     fi
     
+    # 选择空闲显存最多的GPU
+    CUDA_IDX=$(get_best_cuda_idx)
+    export CUDA_VISIBLE_DEVICES=$CUDA_IDX
+    echo "🚀 选择的GPU: $CUDA_IDX (空闲显存最大)"
+
+    # 启动服务前，删除旧日志文件
+    if [ -f "/home/models/llm_service.log" ]; then
+        rm -f /home/models/llm_service.log
+    fi
+
+
     echo -e "${YELLOW}⏳ 正在启动服务...${NC}"
     echo "🤖 使用Python: $PYTHON_PATH"
     echo "📂 模型路径: $SELECTED_MODEL"
     echo "🔌 服务端口: $PORT"
     echo "🎯 模型精度: $DTYPE"
     
-    # 启动服务
+    # 启动服务  # tool-call-parser 注意必须使用hermes，兼容Openai模式的tool_calls
     "$PYTHON_PATH" -m vllm.entrypoints.openai.api_server \
         --model "$SELECTED_MODEL" \
         --port "$PORT" \
         --dtype "$DTYPE" \
         --tensor-parallel-size 1 \
+        --enable-auto-tool-choice \
+        --tool-call-parser hermes \
         > "$LOG_FILE" 2>&1 &
-        
     sleep 10
     if lsof -i :$PORT > /dev/null; then
         echo -e "${GREEN}✅ 服务启动成功！${NC}"
         echo "🌐 服务地址: http://localhost:$PORT"
+        echo "🎯 日志文件: $LOG_FILE${NC}"
         echo "🔑 API Key: 任意字符串"
     else
         echo -e "${YELLOW}⚠️ 服务启动失败或启动时间过长，请检查日志文件: $LOG_FILE${NC}"
@@ -240,6 +270,8 @@ check_status() {
         echo "  ├─ GPU使用: $gpu_usage"
         echo "  └─ GPU显存: $gpu_mem"
         echo ""
+        echo "🎯 日志文件: $LOG_FILE${NC}"
+        echo "🎯 查看最新20行日志: tail -n 20 $LOG_FILE"
         echo "⏱️ 运行时长: $uptime"
         
         # 检查API是否可访问

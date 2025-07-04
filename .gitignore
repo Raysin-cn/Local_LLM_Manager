@@ -1,5 +1,10 @@
 Qwen*/
 THUDM*/
+BERT*/
+DEEP*/
+Mini*/
+GLM*/
+venv*/
 
 llm_service.log
 .env
