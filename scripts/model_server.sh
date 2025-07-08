@@ -12,6 +12,9 @@ else
     exit 1
 fi
 
+# 设置vLLM引擎版本（可解决某些模型的FlashAttention兼容性问题）
+# export VLLM_USE_V1=0
+
 # 配置参数
 MODEL_ROOT="${MODEL_ROOT:-$(pwd)}"     # 模型根目录
 PORT="${PORT:-12345}"                  # 服务端口
@@ -144,6 +147,9 @@ start_server() {
         return 1
     fi
     
+    # 获取模型名称
+    local MODEL_NAME=$(basename "$SELECTED_MODEL")
+
     # 选择空闲显存最多的GPU
     CUDA_IDX=$(get_best_cuda_idx)
     export CUDA_VISIBLE_DEVICES=$CUDA_IDX
@@ -164,6 +170,7 @@ start_server() {
     # 启动服务  # tool-call-parser 注意必须使用hermes，兼容Openai模式的tool_calls
     "$PYTHON_PATH" -m vllm.entrypoints.openai.api_server \
         --model "$SELECTED_MODEL" \
+        --served-model-name "$MODEL_NAME" \
         --port "$PORT" \
         --dtype "$DTYPE" \
         --tensor-parallel-size 1 \
