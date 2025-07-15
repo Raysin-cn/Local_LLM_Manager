@@ -29,7 +29,10 @@ fi
 
 # 设置Hugging Face相关路径
 HF_CLI_PATH="$(dirname "$PYTHON_PATH")/huggingface-cli"
-HF_ENDPOINT="${HF_ENDPOINT:-https://hf-mirror.com}"
+# HF_ENDPOINT="${HF_ENDPOINT:-https://hf-mirror.com}"
+# HF_ENDPOINT="https://huggingface.co"
+HF_ENDPOINT="https://hf-mirror.com"
+HF_TOKEN="$HF_TOKEN"
 
 # 设置代理
 if [ -n "$HTTP_PROXY" ]; then
@@ -61,7 +64,9 @@ check_network() {
             return 1
         fi
     else
-        if ping -c 1 $HF_ENDPOINT > /dev/null 2>&1; then
+        # 提取域名用于 ping
+        host=$(echo "$HF_ENDPOINT" | sed -E 's#^https?://##' | cut -d/ -f1)
+        if ping -c 1 "$host" > /dev/null 2>&1; then
             echo -e "${GREEN}网络连接正常${NC}"
             return 0
         else

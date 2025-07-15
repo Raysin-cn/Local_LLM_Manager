@@ -332,6 +332,7 @@ start_server() {
     
     echo "📏 最大序列长度: $MAX_MODEL_LEN"
     
+    #NOTE  关于tool_calling的配置，参考https://vllm.hyper.ai/docs/features/tool_calling/
     eval "$PYTHON_PATH -m vllm.entrypoints.openai.api_server \
         --model \"$SELECTED_MODEL\" \
         --served-model-name \"$MODEL_NAME\" \
@@ -342,7 +343,7 @@ start_server() {
         --max-model-len $MAX_MODEL_LEN \
         --block-size 16 \
         --enable-auto-tool-choice \
-        --tool-call-parser hermes \
+        --tool-call-parser pythonic \
         $EXTRA_ARGS \
         > \"$LOG_FILE\" 2>&1 &"
     sleep 10
@@ -353,7 +354,7 @@ start_server() {
         echo "🎯 日志文件: $LOG_FILE${NC}"
         echo "🔑 API Key: 任意字符串"
     else
-        echo -e "${YELLOW}⚠️ 服务启动失败或启动时间过长，请检查日志文件: $LOG_FILE${NC}"
+        echo -e "${YELLOW}⚠️ 启动时间过长 或 服务启动失败，请检查日志文件: $LOG_FILE${NC}"
     fi
 }
 
