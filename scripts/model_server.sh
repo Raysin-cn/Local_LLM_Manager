@@ -38,7 +38,7 @@ LOG_FILE="$(cd "$(dirname "$LOG_FILE")" && pwd)/$(basename "$LOG_FILE")"
 #         exit 1
 #     fi
 # fi
-PYTHON_PATH="/home/models/venv/llm/bin/python"
+PYTHON_PATH="/home/models/.venv/bin/python"
 
 # 颜色定义
 RED='\033[0;31m'
@@ -340,10 +340,10 @@ start_server() {
         --dtype \"$DTYPE\" \
         --tensor-parallel-size 1 \
         --gpu-memory-utilization $GPU_MEMORY_UTIL \
-        --max-model-len $MAX_MODEL_LEN \
         --block-size 16 \
         --enable-auto-tool-choice \
-        --tool-call-parser pythonic \
+        --tool-call-parser hermes \
+        --max-model-len $MAX_MODEL_LEN \
         $EXTRA_ARGS \
         > \"$LOG_FILE\" 2>&1 &"
     sleep 10

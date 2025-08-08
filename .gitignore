@@ -4,7 +4,10 @@ BERT*/
 DEEP*/
 Mini*/
 GLM*/
+gpt*/
 venv*/
+.venv*/
 
 llm_service.log
 .env
+temp

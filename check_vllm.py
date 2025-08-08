@@ -18,7 +18,7 @@ tools = [{
         "parameters": {
             "type": "object",
             "properties": {
-                "location": {"type": "string", "description": "City and state, e.g., 'San Francisco, CA'"},
+                "location": {"type": "string", "description": "City and state, e.g., 'Beijing, China'"},
                 "unit": {"type": "string", "enum": ["celsius", "fahrenheit"]}
             },
             "required": ["location", "unit"]
@@ -29,7 +29,7 @@ tools = [{
 print(f"Current model: {client.models.list().data[0].id}")
 response = client.chat.completions.create(
     model=client.models.list().data[0].id,
-    messages=[{"role": "user", "content": "What's the weather like in San Francisco?"}],
+    messages=[{"role": "user", "content": "What's the weather like in Beijing, China?"}],
     tools=tools,
     tool_choice="auto"
 )

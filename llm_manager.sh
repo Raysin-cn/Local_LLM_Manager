@@ -27,7 +27,7 @@ MODEL_ROOT="${MODEL_ROOT:-$(pwd)}"     # 模型根目录
 #         exit 1
 #     fi
 # fi
-PYTHON_PATH="/home/models/venv/llm/bin/python"
+PYTHON_PATH="/home/models/.venv/bin/python"
 
 # 颜色定义
 RED='\033[0;31m'
